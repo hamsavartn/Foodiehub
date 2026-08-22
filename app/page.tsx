@@ -4,7 +4,7 @@ import CategoryRow from "../components/sections/CategoryRow";
 import RestaurantsGrid from "../components/sections/RestaurantsGrid";
 import { Restaurant } from "../components/sections/RestaurantCard";
 import { supabase } from "../lib/supabaseClient";
-
+import ExploreRestaurants from "../components/sections/ExploreRestaurants";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -44,7 +44,7 @@ export default async function Home() {
             Failed to load restaurants from Supabase: {error.message}
           </p>
         ) : (
-          <RestaurantsGrid restaurants={restaurants} />
+          <ExploreRestaurants initial={restaurants} />
         )}
 
         <footer className="mt-16 border-t pt-8 text-sm text-muted-foreground">
