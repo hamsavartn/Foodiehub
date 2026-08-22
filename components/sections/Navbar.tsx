@@ -2,7 +2,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { MapPin, Search, ShoppingCart } from "lucide-react";
 import UserMenu from "../auth/UserMenu";
-
+import CartSheet from "../cart/CartSheet";
 export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b bg-white/70 backdrop-blur">
@@ -33,10 +33,7 @@ export default function Navbar() {
             <UserMenu />
           </div>
 
-          <Button className="gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            Cart
-          </Button>
+          <CartSheet />
         </div>
       </div>
     </header>

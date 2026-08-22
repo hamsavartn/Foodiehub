@@ -1,8 +1,15 @@
+"use client";
+
 import Image from "next/image";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
 import { Star } from "lucide-react";
+
 import ShineBorder from "../effects/ShineBorder";
+import { useCart } from "../cart/CartProvider";
+
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
+
 export type Restaurant = {
   id: string;
   name: string;
@@ -10,10 +17,12 @@ export type Restaurant = {
   rating: number;
   time: string;
   delivery: string;
-  image?: string; // e.g. "/assets/rest-1.jpg"
+  image?: string; // e.g. "/assets/pizza.png"
 };
 
 export default function RestaurantCard({ r }: { r: Restaurant }) {
+  const cart = useCart();
+
   return (
     <ShineBorder className="hover:shadow-xl">
       <Card className="overflow-hidden border-0 bg-white/90">
@@ -41,8 +50,14 @@ export default function RestaurantCard({ r }: { r: Restaurant }) {
           </div>
         </CardContent>
 
-        <CardFooter className="pt-0">
+        <CardFooter className="flex items-center justify-between gap-2 pt-0">
           <Badge className="bg-orange-600 hover:bg-orange-600">Featured</Badge>
+          <Button
+            size="sm"
+            onClick={() => cart.addCombo({ id: r.id, name: r.name })}
+          >
+            Add to cart
+          </Button>
         </CardFooter>
       </Card>
     </ShineBorder>

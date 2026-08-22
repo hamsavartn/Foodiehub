@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabaseClient";
-import AuthDialog from "./AuthDialog";
+import { supabase } from "@/lib/supabaseClient";
+import AuthDialog from "@/components/auth/AuthDialog";
 
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -63,13 +64,21 @@ export default function UserMenu() {
           <Avatar className="h-6 w-6">
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
-          <span className="hidden md:inline">{email}</span>
+          <span className="hidden md:inline truncate max-w-[180px]">{email}</span>
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
+
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link href="/orders">My orders</Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
         <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
