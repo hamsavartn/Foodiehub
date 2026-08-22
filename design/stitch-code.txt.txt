@@ -1,0 +1,538 @@
+<!-- Design System -->
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_SHADER_START:ANIMATION_8 class="fixed inset-0 w-full h-full" -->
+<div class="fixed inset-0 w-full h-full" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_8" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_8');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+varying vec2 v_texCoord;
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec3 color1 = vec3(1.0, 0.32, 0.0); // #ff5200 (Zesty Orange)
+    vec3 color2 = vec3(1.0, 0.95, 0.9); // Light surface
+    
+    float noise = sin(uv.x * 3.0 + u_time * 0.5) * cos(uv.y * 2.0 - u_time * 0.3);
+    float grad = smoothstep(0.3, 0.7, uv.y + noise * 0.1);
+    
+    vec3 finalColor = mix(color1, color2, grad);
+    gl_FragColor = vec4(finalColor, 0.15); // Subtle overlay
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_8 -->
+</body>
+</html>
+
+
+<!-- Shader -->
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodieHub - Delicious food, delivered fast</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#271900",
+                      "surface-container": "#f1edec",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#ece7e7",
+                      "surface-container-low": "#f7f2f2",
+                      "on-primary": "#ffffff",
+                      "on-background": "#1c1b1b",
+                      "canvas-white": "#FFFFFF",
+                      "on-primary-fixed": "#390c00",
+                      "on-surface": "#1c1b1b",
+                      "surface-variant": "#e6e1e1",
+                      "on-tertiary-container": "#fffbff",
+                      "inverse-surface": "#313030",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#bb0017",
+                      "inverse-primary": "#ffb59d",
+                      "primary-container": "#d24200",
+                      "tertiary-fixed-dim": "#ffba20",
+                      "tertiary-fixed": "#ffdea8",
+                      "on-error-container": "#93000a",
+                      "on-surface-variant": "#5c4037",
+                      "on-tertiary-fixed-variant": "#5e4200",
+                      "inverse-on-surface": "#f4f0ef",
+                      "zesty-orange": "#FF5200",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed": "#ffdbd0",
+                      "surface-dim": "#ddd9d8",
+                      "outline": "#907065",
+                      "secondary-container": "#e1272c",
+                      "tertiary": "#795600",
+                      "smoke-grey": "#F5F5F5",
+                      "on-primary-container": "#fffbff",
+                      "on-error": "#ffffff",
+                      "soft-red": "#F93A3A",
+                      "honey-gold": "#FFB800",
+                      "surface-tint": "#ac3500",
+                      "on-secondary-fixed": "#410003",
+                      "primary": "#a83300",
+                      "surface-container-highest": "#e6e1e1",
+                      "background": "#fdf8f8",
+                      "outline-variant": "#e5beb2",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed": "#ffdad6",
+                      "on-primary-fixed-variant": "#832600",
+                      "surface-bright": "#fdf8f8",
+                      "surface": "#fdf8f8",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#930010",
+                      "tertiary-container": "#986d00",
+                      "secondary-fixed-dim": "#ffb3ac",
+                      "primary-fixed-dim": "#ffb59d",
+                      "on-secondary-container": "#fffbff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "card": "16px"
+              },
+              "spacing": {
+                      "unit": "8px",
+                      "gutter": "24px",
+                      "stack-lg": "48px",
+                      "stack-md": "24px",
+                      "margin-tablet": "32px",
+                      "stack-xs": "4px",
+                      "margin-desktop": "64px",
+                      "stack-xl": "80px",
+                      "margin-mobile": "16px",
+                      "stack-sm": "12px"
+              },
+              "fontFamily": {
+                      "label-lg": ["Inter"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "headline-md": ["Montserrat"],
+                      "headline-lg": ["Montserrat"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "display-lg": ["Montserrat"],
+                      "body-md": ["Inter"]
+              },
+              "fontSize": {
+                      "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "headline-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "display-lg": ["56px", {"lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+
+        .shadow-level-1 { box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); }
+        .shadow-level-2 { box-shadow: 0px 12px 32px rgba(255, 82, 0, 0.12); }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="w-full top-0 sticky z-50 shadow-sm bg-canvas-white">
+<div class="max-w-[1440px] mx-auto px-margin-desktop flex items-center justify-between h-[80px]">
+<!-- Brand -->
+<div class="flex items-center gap-gutter">
+<a class="text-headline-md font-headline-md font-extrabold text-zesty-orange" href="#">FoodieHub</a>
+<!-- Search (on left) -->
+<div class="hidden md:flex items-center bg-smoke-grey rounded-full px-4 py-2 w-64 focus-within:bg-canvas-white focus-within:ring-2 focus-within:ring-zesty-orange focus-within:shadow-level-1 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none outline-none text-body-md w-full placeholder-on-surface-variant" placeholder="Search restaurants..." type="text"/>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-gutter">
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-zesty-orange transition-colors duration-200" href="#">Location</a>
+<a class="font-label-lg text-label-lg text-zesty-orange font-bold border-b-2 border-zesty-orange pb-1 hover:text-zesty-orange transition-colors duration-200" href="#">Menu</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-zesty-orange transition-colors duration-200" href="#">Offers</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-zesty-orange transition-colors duration-200" href="#">Help</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-stack-sm">
+<button class="font-label-lg text-label-lg text-on-surface-variant hover:text-zesty-orange transition-colors duration-200">Login</button>
+<button class="bg-zesty-orange text-canvas-white font-label-lg text-label-lg font-bold py-2 px-6 rounded-full hover:shadow-level-2 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">shopping_cart</span>
+                    Cart
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="relative w-full h-[600px] flex items-center justify-center overflow-hidden bg-surface-container-high">
+<!-- STITCH_SHADER_START:ANIMATION_8 class="absolute inset-0 w-full h-full opacity-60" -->
+<div class="absolute inset-0 w-full h-full opacity-60" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_8" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_8');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+varying vec2 v_texCoord;
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec3 color1 = vec3(1.0, 0.32, 0.0); // #ff5200 (Zesty Orange)
+    vec3 color2 = vec3(1.0, 0.95, 0.9); // Light surface
+    
+    float noise = sin(uv.x * 3.0 + u_time * 0.5) * cos(uv.y * 2.0 - u_time * 0.3);
+    float grad = smoothstep(0.3, 0.7, uv.y + noise * 0.1);
+    
+    vec3 finalColor = mix(color1, color2, grad);
+    gl_FragColor = vec4(finalColor, 0.15); // Subtle overlay
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_8 -->
+<div class="relative z-10 text-center px-margin-mobile md:px-margin-desktop max-w-[800px] animate-fade-in-up">
+<h1 class="font-display-lg text-display-lg text-on-background mb-stack-sm">Delicious food, delivered fast</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-stack-md">The best meals from your favorite local spots, hot and ready.</p>
+<button class="bg-zesty-orange text-canvas-white font-headline-md text-headline-md font-bold py-4 px-12 rounded-full hover:shadow-level-2 transform hover:-translate-y-1 transition-all duration-300">
+                    Order Now
+                </button>
+</div>
+</section>
+<div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-stack-xl space-y-stack-xl">
+<!-- Category Chips -->
+<section class="animate-fade-in-up delay-100">
+<div class="flex flex-wrap gap-stack-sm justify-center md:justify-start">
+<button class="bg-zesty-orange text-canvas-white font-label-sm text-label-sm px-6 py-3 rounded-full hover:shadow-level-2 transition-all transform hover:-translate-y-1">All</button>
+<button class="bg-smoke-grey text-on-surface font-label-sm text-label-sm px-6 py-3 rounded-full hover:bg-surface-variant transition-all transform hover:-translate-y-1">Pizza</button>
+<button class="bg-smoke-grey text-on-surface font-label-sm text-label-sm px-6 py-3 rounded-full hover:bg-surface-variant transition-all transform hover:-translate-y-1">Burgers</button>
+<button class="bg-smoke-grey text-on-surface font-label-sm text-label-sm px-6 py-3 rounded-full hover:bg-surface-variant transition-all transform hover:-translate-y-1">Sushi</button>
+<button class="bg-smoke-grey text-on-surface font-label-sm text-label-sm px-6 py-3 rounded-full hover:bg-surface-variant transition-all transform hover:-translate-y-1">Tacos</button>
+<button class="bg-smoke-grey text-on-surface font-label-sm text-label-sm px-6 py-3 rounded-full hover:bg-surface-variant transition-all transform hover:-translate-y-1">Salad</button>
+<button class="bg-smoke-grey text-on-surface font-label-sm text-label-sm px-6 py-3 rounded-full hover:bg-surface-variant transition-all transform hover:-translate-y-1">Desserts</button>
+</div>
+</section>
+<!-- Popular Promo -->
+<section class="animate-fade-in-up delay-200">
+<div class="bg-primary-fixed text-on-primary-fixed rounded-[24px] p-stack-md md:p-stack-lg flex flex-col md:flex-row items-center justify-between shadow-level-1 relative overflow-hidden">
+<div class="z-10 max-w-md mb-stack-md md:mb-0">
+<span class="bg-zesty-orange text-canvas-white font-label-sm text-label-sm px-3 py-1 rounded-full uppercase tracking-wider mb-stack-sm inline-block">Popular this week</span>
+<h2 class="font-headline-lg text-headline-lg mb-stack-sm">Spicy Smash Burger Combo</h2>
+<p class="font-body-md text-body-md mb-stack-md text-on-primary-fixed-variant">Double beef patty, jalapeños, pepper jack cheese, and our secret zesty sauce. Includes fries and a drink.</p>
+<button class="bg-canvas-white text-zesty-orange border-2 border-zesty-orange font-label-lg text-label-lg font-bold py-3 px-8 rounded-full hover:bg-zesty-orange hover:text-canvas-white transition-all">
+                            Claim Offer
+                        </button>
+</div>
+<div class="w-full md:w-1/2 h-64 md:h-80 relative rounded-card overflow-hidden z-10 shadow-lg">
+<img class="object-cover w-full h-full" data-alt="A close up, high quality appetizing food photography shot of a double smash burger with melted pepper jack cheese and jalapeños. The burger is placed on a rustic wooden board in a warm, inviting setting with soft directional lighting highlighting the textures and juice of the meat. In the background out of focus are crispy fries and a cold drink." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsS3y68Gbw-GST7-9dWYSg-MK7JcjK3WjKC5IZgIh3FwStWtvhDgE3w3eY2FjqXUvioU8H8DTlMYqBtgcmUEuN1T-avr35Lwo7AAd9QEXJ2s3cPLhI-2ha2Fas31YgNrz2rNFbq3ACI3xaFtX-XwKe5aniQ16NjN7HmlZmcODIc57KJOBBzG8hEnOf7TlsSlvS6acl5L15InyD95o2zR3cXyS0K_RY6nvjm0xg-iGbjT_TwUDl7nuH"/>
+</div>
+<!-- Decorative abstract shape -->
+<div class="absolute -right-20 -bottom-20 w-96 h-96 bg-canvas-white opacity-20 rounded-full blur-3xl z-0"></div>
+</div>
+</section>
+<!-- Restaurant Grid -->
+<section class="animate-fade-in-up delay-300">
+<div class="flex justify-between items-end mb-stack-md">
+<h2 class="font-headline-md text-headline-md text-on-background">Explore Restaurants</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="bg-canvas-white rounded-card shadow-level-1 hover:shadow-level-2 transform hover:scale-[1.03] transition-all duration-300 overflow-hidden cursor-pointer group">
+<div class="relative h-48 w-full overflow-hidden">
+<img class="object-cover w-full h-full" data-alt="A top-down view of a gourmet wood-fired pizza with fresh basil, fresh mozzarella, and a rich tomato sauce, set on a dark slate surface. Warm, dramatic lighting emphasizing the crispy crust and melted cheese." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGjFZdQeCWcWYgngohZ8rgqxirx5RcMRj7IM5X0jFj-aMY1R9_hFJzMj79Y5jp0VO8N6sOAelcnhS3ClwSY22c1RLIvC5ccyA7G10zrbarBgp6qb9w6qF78vYEhcHUxDvOxqfT59hHTZZKzvXE-48SiOGTNAlJaIEkXpxVifYbdjVix9UT--RivYAIEaYR-lG3n20lGfXUkPtOxwlZnMbp6B6pYjibfM8ZPxQLZ0vlCCxwwnuB29y5"/>
+<button class="absolute top-4 right-4 bg-canvas-white/80 backdrop-blur p-2 rounded-full text-on-surface-variant hover:text-zesty-orange transition-colors">
+<span class="material-symbols-outlined" data-weight="fill">favorite</span>
+</button>
+</div>
+<div class="p-stack-sm">
+<div class="flex justify-between items-start mb-stack-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-zesty-orange transition-colors">Luigi's Oven</h3>
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-honey-gold text-[16px]" data-weight="fill">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.8</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-sm">Authentic Italian Wood-fired Pizza</p>
+<div class="flex items-center gap-4 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>20-30 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">delivery_dining</span>
+<span>$2.99</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-canvas-white rounded-card shadow-level-1 hover:shadow-level-2 transform hover:scale-[1.03] transition-all duration-300 overflow-hidden cursor-pointer group">
+<div class="relative h-48 w-full overflow-hidden">
+<img class="object-cover w-full h-full" data-alt="A macro shot of a vibrant sushi platter featuring salmon nigiri and california rolls, beautifully arranged on a minimalist white ceramic plate. The lighting is clean and bright, reflecting a modern, premium dining aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJk-aGN0DjAYhZlsMEHb9_nvhrQLk7MNEdIL9yHacwIU64Gt8bhISYv1353MlcesLLEhytPiUkqZWwXsZER2RQz8YVhmJhuYzzYsXSA-SIxFITAILC2EiTZtiJlzt8xnN-6fRdKrMQZXKR9T53lkY-ohoD5n8WxeiIhPr6Dmwvr3oEuoKtplOTcthcwy_9Nubgea11yyBzbpwhsaYuE-ul1SSszHeL5mN690ILqQwMfxGGpN5uM-QB"/>
+<button class="absolute top-4 right-4 bg-canvas-white/80 backdrop-blur p-2 rounded-full text-on-surface-variant hover:text-zesty-orange transition-colors">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+</div>
+<div class="p-stack-sm">
+<div class="flex justify-between items-start mb-stack-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-zesty-orange transition-colors">Zen Sushi</h3>
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-honey-gold text-[16px]" data-weight="fill">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.9</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-sm">Premium Sushi &amp; Japanese Cuisine</p>
+<div class="flex items-center gap-4 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>35-45 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">delivery_dining</span>
+<span>Free</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-canvas-white rounded-card shadow-level-1 hover:shadow-level-2 transform hover:scale-[1.03] transition-all duration-300 overflow-hidden cursor-pointer group">
+<div class="relative h-48 w-full overflow-hidden">
+<img class="object-cover w-full h-full" data-alt="A mouth-watering close-up of a stacked artisan burger with thick-cut bacon, fresh lettuce, and ripe tomatoes on a brioche bun. The lighting is warm and dramatic, highlighting the juicy textures against a slightly blurred, lively diner background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOLNIk5QRNYYkqnUfCZlQz4Q9fZJg6YuwY7bZhNk9MR_Tn5Pm-1EUjmEXuj3yjcaHZp6hoyD6lHmpb-JMP2CzHH8VYMXpUrMmOdVSgBKrxiZhEiHSSR-SnU57bILfGWq8s1SLiUA6Bypq5FsDIXH3mI1fKJy9MZkaZezxocPqqspSPirGlFkbhDACg5xcB9I4OdpkO_zXCvwfZNT2Ig4UEqhZ9SfHk9hhlQW__7KsLY0YG58ja9de4"/>
+<button class="absolute top-4 right-4 bg-canvas-white/80 backdrop-blur p-2 rounded-full text-zesty-orange transition-colors">
+<span class="material-symbols-outlined" data-weight="fill">favorite</span>
+</button>
+</div>
+<div class="p-stack-sm">
+<div class="flex justify-between items-start mb-stack-xs">
+<h3 class="font-headline-md text-headline-md text-on-surface group-hover:text-zesty-orange transition-colors">The Burger Joint</h3>
+<div class="flex items-center gap-1 bg-surface-container-high px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-honey-gold text-[16px]" data-weight="fill">star</span>
+<span class="font-label-sm text-label-sm text-on-surface">4.6</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-sm">Gourmet Burgers &amp; Hand-cut Fries</p>
+<div class="flex items-center gap-4 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>15-25 min</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">delivery_dining</span>
+<span>$1.49</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-lg bg-surface-container-low">
+<div class="max-w-[1440px] mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div>
+<a class="text-headline-md font-headline-md font-extrabold text-zesty-orange mb-stack-sm block" href="#">FoodieHub</a>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">© 2024 FoodieHub. All rights reserved.</p>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">Company</h4>
+<a class="font-body-md text-body-md text-on-surface hover:text-zesty-orange transition-colors duration-200 underline focus:ring-2 focus:ring-zesty-orange" href="#">About Us</a>
+<a class="font-body-md text-body-md text-on-surface hover:text-zesty-orange transition-colors duration-200 underline focus:ring-2 focus:ring-zesty-orange" href="#">Careers</a>
+<a class="font-body-md text-body-md text-on-surface hover:text-zesty-orange transition-colors duration-200 underline focus:ring-2 focus:ring-zesty-orange" href="#">Partner with us</a>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">Legal &amp; Support</h4>
+<a class="font-body-md text-body-md text-on-surface hover:text-zesty-orange transition-colors duration-200 underline focus:ring-2 focus:ring-zesty-orange" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-surface hover:text-zesty-orange transition-colors duration-200 underline focus:ring-2 focus:ring-zesty-orange" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface hover:text-zesty-orange transition-colors duration-200 underline focus:ring-2 focus:ring-zesty-orange" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+</body></html>
