@@ -1,16 +1,27 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import RestaurantCard, { Restaurant } from "./RestaurantCard";
 
-const container = {
+const container: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },
+  },
 };
 
-const item = {
+const item: Variants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      // cubic-bezier for a smooth ease-out
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
 };
 
 export default function RestaurantsGrid({
